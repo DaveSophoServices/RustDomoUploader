@@ -1,5 +1,5 @@
 [package]
-name = "RustDomoUploader"
+name = "rust_domo_uploader"
 version = "0.1.0"
 authors = ["Dave Smith <dave@sophoservices.com>"]
 edition = "2018"
@@ -11,3 +11,4 @@ domo = "^0.2.3"
 toml = "0.5"
 serde = { version="^1", features=["derive"] }
 rust_active_campaign = { git="https://github.com/DaveSophoServices/RustActiveCampaign", branch="main"}
+futures="^0.3"
