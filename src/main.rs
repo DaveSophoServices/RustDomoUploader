@@ -5,7 +5,6 @@ use futures::executor::block_on;
 
 #[derive(Debug,Deserialize)]
 struct DomoConfigFile {
-    host: String,
     client_id: String,
     secret: String,
 }
@@ -23,12 +22,12 @@ struct ConfigFile {
 fn main() {
     let config = read_config();
     println!("{:#?}", config);
-    let domo = Client::new(&config.domo.host, &config.domo.client_id, &config.domo.secret);
+    let domo = Client::new("https://api.domo.com", &config.domo.client_id, &config.domo.secret);
     block_on(list_datasets(domo));
 }
 
 async fn list_datasets(domo: Client) {
-    let r = domo.get_datasets(None,None).await.unwrap();
+    let r = domo.get_datasets(Some(50),Some(0)).await.unwrap();
     println!("{:#?}", r);    
 }
 
