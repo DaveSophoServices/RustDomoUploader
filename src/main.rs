@@ -3,7 +3,7 @@ use domo::public::Client;
 use std::fs;
 use futures::executor::block_on;
 use rust_active_campaign;
-
+use log::{debug,info};
 mod domo_util;
 mod ac_util;
 
@@ -28,19 +28,28 @@ struct ConfigFile {
     sync: SyncConfigFile,
 }
 
-fn main() {
+fn main() {    
     let config = read_config();
+    init_log();
 
+    block_on(do_work(config));
+}
+async fn do_work(config:ConfigFile) {
+    debug!("Creating domo client");
     let dc = Client::new("https://api.domo.com", &config.domo.client_id, &config.domo.secret);
+    debug!("Creating Active Campaign client");
     let activecamp = rust_active_campaign::new(&config.activecampaign.namespace, &config.activecampaign.token).unwrap();
-    
+
+    info!("Starting find for campaign dataset");
     let ds_promise = domo_util::find_or_create_campaign_dataset(&dc);
+    info!("Starting fetch of Active Campaign campaigns");
     let campaign_promise = ac_util::get_campaigns(&activecamp);
 
-    let ds = block_on(ds_promise).expect("Failed to find dataset for campaigns");
-    println!("Dataset: {}", ds);
-    let campaigns = block_on(campaign_promise).unwrap();
-    println!("Campaigns: {:#?}", campaigns);
+    info!("... waiting futures");
+    let (ds,campaigns) = futures::join!(ds_promise,campaign_promise);
+    debug!("Dataset: {}", ds.unwrap());
+    
+//    debug!("Campaigns: {:#?}", campaigns);
 }
 
 fn read_config() -> ConfigFile {
@@ -65,3 +74,17 @@ Error: {}"#, e),
     };   
 }
 
+fn init_log() {
+    use simplelog::*;
+    CombinedLogger::init(
+	vec![
+	    TermLogger::new(
+		LevelFilter::Debug,
+		Config::default(),
+		TerminalMode::Mixed),
+	    WriteLogger::new(
+		LevelFilter::Info,
+		Config::default(),
+		std::fs::File::create("log").unwrap()),
+	]).unwrap();
+}

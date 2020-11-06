@@ -12,3 +12,5 @@ toml = "0.5"
 serde = { version="^1", features=["derive"] }
 rust_active_campaign = { git="https://github.com/DaveSophoServices/RustActiveCampaign", branch="main"}
 futures="^0.3"
+log="^0.4"
+simplelog = "^0.8"
