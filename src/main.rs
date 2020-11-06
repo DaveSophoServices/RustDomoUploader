@@ -5,6 +5,7 @@ use futures::executor::block_on;
 use rust_active_campaign;
 
 mod domo_util;
+mod ac_util;
 
 #[derive(Debug,Deserialize)]
 struct DomoConfigFile {
@@ -31,11 +32,15 @@ fn main() {
     let config = read_config();
 
     let dc = Client::new("https://api.domo.com", &config.domo.client_id, &config.domo.secret);
+    let activecamp = rust_active_campaign::new(&config.activecampaign.namespace, &config.activecampaign.token).unwrap();
     
     let ds_promise = domo_util::find_or_create_campaign_dataset(&dc);
+    let campaign_promise = ac_util::get_campaigns(&activecamp);
 
     let ds = block_on(ds_promise).expect("Failed to find dataset for campaigns");
     println!("Dataset: {}", ds);
+    let campaigns = block_on(campaign_promise).unwrap();
+    println!("Campaigns: {:#?}", campaigns);
 }
 
 fn read_config() -> ConfigFile {
