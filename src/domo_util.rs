@@ -1,5 +1,6 @@
 use domo::public::dataset::{DataSet, Schema, Column};
 use domo::public::Client;
+use log::debug;
 
 mod error;
 use error::Error;
@@ -153,4 +154,11 @@ async fn create_campaign_dataset(dc: Client, ds_name: &str) -> String {
 //     let r = domo.put_dataset_data(&dataset_id,file)
 // 	.await;
 //     println!("{:#?}", r);
+}
+
+pub async fn upload(dc:&Client, ds:&str, fname:&str) {
+    debug!("Uploading {} to dataset {}", ds, fname);
+    // ignore the results of the following. It should return a 204 status
+    // with an empty body, but the domo code tries to parse the return
+    dc.put_dataset_data(ds, fname).await;
 }
