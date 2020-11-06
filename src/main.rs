@@ -4,6 +4,8 @@ use std::fs;
 use futures::executor::block_on;
 use rust_active_campaign;
 use log::{debug,info};
+use std::io::Write;
+
 mod domo_util;
 mod ac_util;
 
@@ -48,7 +50,14 @@ async fn do_work(config:ConfigFile) {
     info!("... waiting futures");
     let (ds,campaigns) = futures::join!(ds_promise,campaign_promise);
     debug!("Dataset: {}", ds.unwrap());
-    
+
+    {
+	// need to iterate campaigns into a CSV
+	let mut csv = csv::Writer::from_path("campaigns.csv").unwrap();
+	for c in campaigns.unwrap().campaigns.iter() {
+	    csv.serialize(&c).unwrap();
+	}
+    }
 //    debug!("Campaigns: {:#?}", campaigns);
 }
 
